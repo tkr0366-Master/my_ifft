@@ -405,22 +405,35 @@ def _read_manual_tones():
 
 
 def _print_result(result, nfft, meta=None):
+    bin_distance = C / (2.0 * nfft * DELTA_F)
+    mag = result["mag"]
+    max_peak_index = result["max_peak_index"]
+    shortest_path_index = result["shortest_path_index"]
+
     print()
-    print("===== SDK IFFT計算結果 =====")
-    print(f"NFFT: {nfft}")
+    print("===== IFFT計算結果 =====")
     print(f"使用tone数: {result['used_tones']}")
-    print(f"使用channel数: {len(result['used_channels'])}")
-    print(f"最大ピークindex: {result['max_peak_index']}")
-    print(f"近距離ピークindex: {result['shortest_path_index']}")
-    print(f"補正後k_peak: {result['k_peak']}")
-    print(f"t_hat: {result['t_hat']:.6f}")
-    print(f"IFFT距離: {result['distance']:.6f} m")
+    print(f"NFFT: {nfft}")
+    print(f"1 indexあたりの距離: {bin_distance:.9f} m")
+    print()
+    print(f"最大ピークindex: {max_peak_index}")
+    print(f"最大ピーク距離: {max_peak_index * bin_distance:.6f} m")
+    print(f"最大ピークmagnitude: {mag[max_peak_index]:.6f}")
+    print()
+    print(f"近距離ピークindex: {shortest_path_index}")
+    print(f"近距離ピーク距離: {shortest_path_index * bin_distance:.6f} m")
 
     if result["left_null_index"] is not None:
+        print()
         print(f"left_null_index: {result['left_null_index']}")
         print(f"peak_to_null_distance: {result['peak_to_null_distance']}")
 
+    print()
+    print(f"t_hat: {result['t_hat']:.6f}")
+    print(f"IFFT距離: {result['distance']:.6f} m")
+
     if result["ignored_channels"]:
+        print()
         print(f"範囲外channel: {result['ignored_channels']}")
 
     if meta:
@@ -442,12 +455,11 @@ def _print_result(result, nfft, meta=None):
 
     print()
     print("===== ピーク上位5個 =====")
-    mag = result["mag"]
     top_indices = np.argsort(mag)[-5:][::-1]
 
     for idx in top_indices:
         d = idx * C / (2.0 * nfft * DELTA_F)
-        print(f"index={idx}, magnitude={mag[idx]:.6f}, 距離={d:.6f} m")
+        print(f"index={idx}, magnitude={mag[idx]:.6f}, distance={d:.6f} m")
 
 
 def main():
